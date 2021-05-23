@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <launch>
     <node pkg="bluerov_auto" type="KalmanFilter.py" name="KalmanFilterNode" />
-    <node pkg="bluerov_auto" type="CustomCameraNode" name="CustomCameraNode" />
+    <!-- <node pkg="bluerov_auto" type="CustomCameraNode" name="CustomCameraNode" /> -->
     <node pkg="cv_camera" type="cv_camera_node" name="cv_camera_node" />    
-    <node pkg="waterlinked_a50_ros_driver" type="publisher.py" name="publisher.py" />
+    <!-- <node pkg="waterlinked_a50_ros_driver" type="publisher.py" name="publisher.py" /> -->
 </launch>
 
