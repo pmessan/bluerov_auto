@@ -109,7 +109,7 @@ catkin_package(
  INCLUDE_DIRS include
  LIBRARIES bluerov_auto
  CATKIN_DEPENDS roscpp rospy std_msgs geometry_msgs message_generation
- DEPENDS system_lib
+ #DEPENDS system_lib
 )
 
 ###########
