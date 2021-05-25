@@ -6,6 +6,7 @@ from os import access
 import numpy as np
 from numpy.linalg import inv
 import rospy
+from waterlinked_a50_ros_driver.msg import DVL
 from geometry_msgs.msg import Pose, Twist
 from bluerov_auto.msg import Acceleration, Depth
 from mpl_toolkits import mplot3d
@@ -89,103 +90,77 @@ class KalmanFilter:
 
 
 def rosPublishers(pos, vel, acc, depth):
-    rospy.init_node("KalmanFilterNode")
     pos_publisher = rospy.Publisher("/BlueRov/KalmanFilter/Pose", Pose, queue_size=10)
     vel_publisher = rospy.Publisher("/BlueRov/KalmanFilter/Velocity", Twist, queue_size=10)
     acc_publisher = rospy.Publisher("/BlueRov/KalmanFilter/Acceleration", Acceleration, queue_size=10)
     depth_publisher = rospy.Publisher("/BlueRov/KalmanFilter/Depth", Depth, queue_size=10)
     rate = rospy.Rate(1)
 
-    while not rospy.is_shutdown():
-        # prepping pose data
-        pose = Pose()
-        pose.position.x = pos[0]
-        pose.position.y = pos[1]
-        pose.position.z = pos[2]
+    # while not rospy.is_shutdown():
+    # prepping pose data
+    pose = Pose()
+    pose.position.x = pos[0]
+    pose.position.y = pos[1]
+    pose.position.z = pos[2]
 
-        # zero because no sensor to provide values
-        pose.orientation.x = 0
-        pose.orientation.y = 0
-        pose.orientation.z = 0
-        pose.orientation.w = 0
-
-
-        # prepping velocity data
-        velocities = Twist()
-        velocities.linear.x = vel[0]
-        velocities.linear.y = vel[1]
-        velocities.linear.z = vel[2]
-
-        # zero because sensor does not provide these values
-        velocities.angular.x = 0
-        velocities.angular.y = 0
-        velocities.angular.z = 0
-        
-
-        # prepping acceleration data
-        acceleration = Acceleration()
-        acceleration.Acceleration.x = acc[0]
-        acceleration.Acceleration.y = acc[1]
-        acceleration.Acceleration.z = acc[2]
-
-        # depth data
-        rov_depth = Depth()
-        rov_depth.Depth = depth
-
-        # log infos
-        # rospy.loginfo(velocities)
-        # rospy.loginfo(pose)
-        # rospy.loginfo(acceleration)
-        # rospy.loginfo(rov_depth)
-
-        # publish data
-        vel_publisher.publish(velocities)
-        pos_publisher.publish(pose)
-        acc_publisher.publish(acceleration)
-        depth_publisher.publish(rov_depth)
-
-        # sleep for rest of cycle
-        rate.sleep()
+    # zero because no sensor to provide values
+    pose.orientation.x = 0
+    pose.orientation.y = 0
+    pose.orientation.z = 0
+    pose.orientation.w = 0
 
 
+    # prepping velocity data
+    velocities = Twist()
+    velocities.linear.x = vel[0]
+    velocities.linear.y = vel[1]
+    velocities.linear.z = vel[2]
 
-
-
-
-
-# ------------------------------------------------- Static Initial Settings -------------------------------------------------------
-# Initial State Vector [0 ... 0]
-x = np.zeros((9, 1))
-
-# Estimate Uncertainty
-P = np.eye(9)*500
-
-# Gain Matrix
-# u = np.array([[-9.8]])
-u = np.array([[0]])
-
-f = open('out.json')
-data = json.load(f)
-# np.set_printoptions(precision=4, suppress=True)
-
-
-
-
-
-
-
-MyKalmanFilter = KalmanFilter(x, P, u)
-
-for i in data["dvl_sensor"]: 
+    # zero because sensor does not provide these values
+    velocities.angular.x = 0
+    velocities.angular.y = 0
+    velocities.angular.z = 0
     
+
+    # prepping acceleration data
+    acceleration = Acceleration()
+    acceleration.Acceleration.x = acc[0]
+    acceleration.Acceleration.y = acc[1]
+    acceleration.Acceleration.z = acc[2]
+
+    # depth data
+    rov_depth = Depth()
+    rov_depth.Depth = depth
+
+    # log infos
+    # rospy.loginfo(velocities)
+    # rospy.loginfo(pose)
+    # rospy.loginfo(acceleration)
+    # rospy.loginfo(rov_depth)
+
+    # publish data
+    vel_publisher.publish(velocities)
+    pos_publisher.publish(pose)
+    acc_publisher.publish(acceleration)
+    depth_publisher.publish(rov_depth)
+
+    # sleep for rest of cycle
+    rate.sleep()
+
+
+def callback(data, MyKalmanFilter):
+    # get data from different fields
+    velocity = data.velocity
+    depth = data.altitude
+
     dis = 0
-    for idx, transducer in enumerate(i["transducers"]):
-        dis += transducer["distance"]
+    for idx, transducer in enumerate(data.beams):
+        dis += transducer.distance
     dis /= (idx+1)
     
-    z = np.transpose(np.array([[i["vx"], i["vy"], dis, i["vz"]]]))        # position measurement from DVL [vx, vy, alt, vz]
-    frameTimeDiff = i["time"]                                          # time measurement from DVL
-    measurement_uncertainty = i["fom"]                                 # fom measurement from DVL
+    z = np.transpose(np.array([[data.velocity.x, data.velocity.y, dis, data.velocity.z]]))        # position measurement from DVL [vx, vy, alt, vz]
+    frameTimeDiff = data.time                                         # time measurement from DVL
+    measurement_uncertainty = data.fom                               # fom measurement from DVL
     
     pos, E_uncertainty = MyKalmanFilter.measurement_update(z, frameTimeDiff, measurement_uncertainty)
     pos = pos.flatten()
@@ -194,11 +169,43 @@ for i in data["dvl_sensor"]:
     position = np.take(pos, [0,3,6])
     velocity = np.take(pos, [1,4,7])
     acceleration = np.take(pos, [2,5,8])
-    depth = i["altitude"]
     
     # call ROS publishers
     rosPublishers(position, velocity, acceleration, depth)
     # print("Position: {}\nVelocity: {}\nAcceleration: {}\nDepth: {}\n".format(position, velocity, acceleration, i["altitude"]))
 
+
+def listener():
+    rospy.init_node("KalmanFilterNode")
+
+    rospy.Subscriber("/dvl/data", DVL, callback)
+
+    rospy.spin()
+
+
+
+
+# ------------------------------------------------- Static Initial Settings -------------------------------------------------------
+
+
+if __name__ == '__main__':
+    # Initial State Vector [0 ... 0]
+    x = np.zeros((9, 1))
+
+    # Estimate Uncertainty
+    P = np.eye(9)*500
+
+    # Gain Matrix
+    # u = np.array([[-9.8]])
+    u = np.array([[0]])
+
+    f = open('out.json')
+    data = json.load(f)
+    # np.set_printoptions(precision=4, suppress=True)
+
+    MyKalmanFilter = KalmanFilter(x, P, u)
+    
+    #ROS Nodes
+    listener()
 
 

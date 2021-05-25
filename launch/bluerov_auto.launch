@@ -1,8 +1,16 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="bluerov_auto" type="KalmanFilter.py" name="KalmanFilterNode" />
-    <!-- <node pkg="bluerov_auto" type="CustomCameraNode" name="CustomCameraNode" /> -->
-    <node pkg="cv_camera" type="cv_camera_node" name="cv_camera_node" />    
+       
+    <machine name="assistant" address="ubuntu.local" default="true"/>
+    <machine name="companion" address="raspberrypi.local" default="true"/>
+
+    <group >
+        <node pkg="bluerov_auto" type="KalmanFilter.py" name="KalmanFilterNode" machine="assistant"/>
+        <node pkg="cv_camera" type="cv_camera_node" name="cv_camera_node" machine="assistant"/> 
+        <node pkg="waterlinked_a50_ros_driver" type="publisher.py" name="publisher.py" machine="companion"/> 
+        <node pkg="darknet-ros" type="yolo_v3.launch" name="yolo_v3.launch" machine="assistant"/> 
+        
+    </group>
     <!-- <node pkg="waterlinked_a50_ros_driver" type="publisher.py" name="publisher.py" /> -->
 </launch>
 

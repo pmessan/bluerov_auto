@@ -1,0 +1,21 @@
+std_msgs/Header header
+  uint32 seq
+  time stamp
+  string frame_id
+float64 time
+geometry_msgs/Vector3 velocity
+  float64 x
+  float64 y
+  float64 z
+float64 fom
+float64 altitude
+waterlinked_a50_ros_driver/DVLBeam[] beams
+  int64 id
+  float64 velocity
+  float64 distance
+  float64 rssi
+  float64 nsd
+  bool valid
+bool velocity_valid
+int64 status
+string form
