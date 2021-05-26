@@ -92,7 +92,7 @@ class KalmanFilter:
 def rosPublishers(pos, vel, acc, depth):
     pos_publisher = rospy.Publisher("/BlueRov/KalmanFilter/Pose", Pose, queue_size=10)
     vel_publisher = rospy.Publisher("/BlueRov/KalmanFilter/Velocity", Twist, queue_size=10)
-    acc_publisher = rospy.Publisher("/BlueRov/KalmanFilter/Acceleration", Acceleration, queue_size=10)
+    # acc_publisher = rospy.Publisher("/BlueRov/KalmanFilter/Acceleration", Acceleration, queue_size=10)
     depth_publisher = rospy.Publisher("/BlueRov/KalmanFilter/Depth", Depth, queue_size=10)
     rate = rospy.Rate(1)
 
@@ -123,10 +123,10 @@ def rosPublishers(pos, vel, acc, depth):
     
 
     # prepping acceleration data
-    acceleration = Acceleration()
-    acceleration.Acceleration.x = acc[0]
-    acceleration.Acceleration.y = acc[1]
-    acceleration.Acceleration.z = acc[2]
+    # acceleration = Acceleration()
+    # acceleration.Acceleration.x = acc[0]
+    # acceleration.Acceleration.y = acc[1]
+    # acceleration.Acceleration.z = acc[2]
 
     # depth data
     rov_depth = Depth()
@@ -141,7 +141,7 @@ def rosPublishers(pos, vel, acc, depth):
     # publish data
     vel_publisher.publish(velocities)
     pos_publisher.publish(pose)
-    acc_publisher.publish(acceleration)
+    # acc_publisher.publish(acceleration)
     depth_publisher.publish(rov_depth)
 
     # sleep for rest of cycle
