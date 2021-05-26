@@ -1,14 +1,18 @@
 <?xml version="1.0"?>
 <launch>
        
-    <machine name="assistant" address="ubuntu.local" default="true"/>
-    <machine name="companion" address="raspberrypi.local" default="true"/>
+    <machine name="assistant" address="danter-eth" env-loader="/home/rem0te/env.sh"/>
+    <machine name="companion" address="raspberrypi-eth" env-loader="/home/pi/env.sh"/>
 
-    <group >
+    <group ns="assistant">
         <node pkg="bluerov_auto" type="KalmanFilter.py" name="KalmanFilterNode" machine="assistant"/>
         <node pkg="cv_camera" type="cv_camera_node" name="cv_camera_node" machine="assistant"/> 
         <node pkg="waterlinked_a50_ros_driver" type="publisher.py" name="publisher.py" machine="companion"/> 
         <node pkg="darknet-ros" type="yolo_v3.launch" name="yolo_v3.launch" machine="assistant"/> 
+        
+    </group>
+    <group ns="companion">
+        <node pkg="dummyGasDetector" type="GasLeakageDetector.py" name="GasLeakageDetector.py" machine="companion"/> 
         
     </group>
     <!-- <node pkg="waterlinked_a50_ros_driver" type="publisher.py" name="publisher.py" /> -->
