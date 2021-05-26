@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <launch>
        
-    <machine name="assistant" address="danter.local" env-loader="/home/rem0te/env.sh"/>
-    <machine name="companion" address="raspberrypi.local" user="pi" password="companion" env-loader="/home/pi/env.sh"/>
+    <machine name="assistant" address="danter-eth" env-loader="/home/rem0te/env.sh"/>
+    <machine name="companion" address="raspberrypi-eth" user="pi" password="companion" env-loader="/home/pi/env.sh"/>
 
     <group ns="assistant">
         <node pkg="bluerov_auto" type="KalmanFilter.py" name="KalmanFilterNode" machine="assistant"/>
