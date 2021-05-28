@@ -1,0 +1,6 @@
+<launch>
+  <machine name="track3r" address="track3r-ygg" env-loader="/home/rem0te/env.sh" user="rem0te"/>
+
+  <node machine="track3r" pkg="dummy_gas_detector" type="gas_leakage_detector.py" name="gas_leakage_detector" required="true" output="screen"/>
+
+</launch>

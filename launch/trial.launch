@@ -1,0 +1,5 @@
+<launch>
+
+  <node pkg="dummy_gas_detector" type="gas_leakage_detector.py" name="gas_leakage_detector" required="true" output="screen"/>
+
+</launch>
